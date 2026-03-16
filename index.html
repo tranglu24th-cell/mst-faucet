@@ -1,0 +1,117 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>MST Faucet</title>
+
+<!-- Load ethers trước -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+
+<style>
+body{
+font-family: Arial;
+background:#0f172a;
+color:white;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+}
+
+.box{
+background:#1e293b;
+padding:30px;
+border-radius:10px;
+text-align:center;
+width:320px;
+}
+
+button{
+padding:10px 20px;
+margin-top:10px;
+border:none;
+border-radius:6px;
+background:#6366f1;
+color:white;
+cursor:pointer;
+}
+
+button:hover{
+background:#4f46e5;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+
+<h2>MST Faucet</h2>
+
+<p id="wallet">Wallet: Not connected</p>
+
+<button onclick="connect()">Connect Wallet</button>
+<br>
+<button onclick="claim()">Claim 0.1 MST</button>
+
+</div>
+
+<script>
+
+let provider;
+let signer;
+let userAddress;
+
+const contractAddress = "0x15C503b78FdAcF1Da3e1053038780526246c6fE5";
+const abi = [
+"function claim() public",
+"function lastClaim(address) view returns(uint256)"
+];
+
+async function connect(){
+
+if(typeof window.ethereum === "undefined"){
+alert("MetaMask chưa cài");
+return;
+}
+
+provider = new ethers.providers.Web3Provider(window.ethereum);
+
+await provider.send("eth_requestAccounts", []);
+
+signer = provider.getSigner();
+
+userAddress = await signer.getAddress();
+
+document.getElementById("wallet").innerText =
+"Wallet: " + userAddress.substring(0,6) + "..." + userAddress.slice(-4);
+
+}
+
+async function claim(){
+
+const contract = new ethers.Contract(contractAddress, abi, signer);
+
+try{
+
+const tx = await contract.claim();
+
+alert("Đang gửi giao dịch...");
+
+await tx.wait();
+
+alert("Claim thành công!");
+
+}catch(e){
+
+alert("Không claim được (có thể chưa đủ 24h)");
+
+}
+
+}
+
+</script>
+
+</body>
+</html>
